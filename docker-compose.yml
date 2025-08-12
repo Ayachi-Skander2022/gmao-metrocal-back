@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: metrocal-container
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://nozomi.proxy.rlwy.net:3306/railway?useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: mqeiMSyizzkfZEXFZmiTDWgZUkTsXZmx
+    ports:
+      - "8080:8080"
+    restart: always
