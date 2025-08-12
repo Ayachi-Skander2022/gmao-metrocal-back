@@ -1,14 +1,13 @@
-# Utiliser une image légère avec OpenJDK 21
-FROM eclipse-temurin:21-jdk-alpine
-
-# Définir le répertoire de travail
+# Étape 1 : Builder avec Maven
+FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copier le fichier JAR généré dans l'image
-COPY target/*.jar app.jar
-
-# Exposer le port Spring Boot (par défaut 8080)
+# Étape 2 : Image finale légère
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Lancer l'application
 ENTRYPOINT ["java", "-jar", "app.jar"]
