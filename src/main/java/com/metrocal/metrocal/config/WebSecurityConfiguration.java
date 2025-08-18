@@ -55,8 +55,10 @@ public class WebSecurityConfiguration {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(Arrays.asList(
-        "https://gmao-skander.netlify.app",
-        "http://localhost:4200"
+         "https://gmao-skander.netlify.app",
+    "http://localhost:4200",
+    "https://app.netlify.com"   // parfois utile
+        
     ));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
     configuration.setAllowedHeaders(Arrays.asList("*"));
