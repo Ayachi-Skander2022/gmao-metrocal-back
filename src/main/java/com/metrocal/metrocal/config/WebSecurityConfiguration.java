@@ -55,7 +55,7 @@ public class WebSecurityConfiguration {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(Arrays.asList(
-        "https://imaginative-bunny-30e352.netlify.app",
+        "https://gmao-skander.netlify.app",
         "http://localhost:4200"
     ));
     configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
