@@ -7,7 +7,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-d2jmm7ogjchc73cpjcfg-a.oregon-postgres.render.com:5432/metrocal_db?sslmode=require
       SPRING_DATASOURCE_USERNAME: metrocal_db_user
       SPRING_DATASOURCE_PASSWORD: 7Ufox70SIv36hLp5zC6Q3R4bKWILzhPN
-      SERVER_PORT: 8080
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     ports:
       - "8080:8080"
     restart: always
