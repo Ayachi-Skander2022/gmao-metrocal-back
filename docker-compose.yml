@@ -1,14 +1,30 @@
 version: '3.8'
 services:
-  app:
-    build: .
-    container_name: metrocal-container
+  backend:
+    image: metrocal-backend:latest
+    container_name: metrocal-backend
+    volumes:
+      - ./certs.d:/certs
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://dpg-d2jmm7ogjchc73cpjcfg-a.oregon-postgres.render.com:5432/metrocal_db?sslmode=require
-      SPRING_DATASOURCE_USERNAME: metrocal_db_user
-      SPRING_DATASOURCE_PASSWORD: 7Ufox70SIv36hLp5zC6Q3R4bKWILzhPN
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://dpg-d2jmm7ogjchc73cpjcfg-a.oregon-postgres.render.com:5432/metrocal_db?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: "metrocal_db_user"
+      SPRING_DATASOURCE_PASSWORD: "7Ufox70SIv36hLp5zC6Q3R4bKWILzhPN"
+      SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.PostgreSQLDialect"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
     ports:
       - "8080:8080"
     restart: always
+
+  app:
+    build: .
+    container_name: metrocal-app
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://dpg-d2jmm7ogjchc73cpjcfg-a.oregon-postgres.render.com:5432/metrocal_db?sslmode=require"
+      SPRING_DATASOURCE_USERNAME: "metrocal_db_user"
+      SPRING_DATASOURCE_PASSWORD: "7Ufox70SIv36hLp5zC6Q3R4bKWILzhPN"
+      SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.PostgreSQLDialect"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
