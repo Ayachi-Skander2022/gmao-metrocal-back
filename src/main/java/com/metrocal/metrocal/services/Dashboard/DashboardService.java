@@ -5,7 +5,9 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.metrocal.metrocal.dto.DashboardStatsClientDto;
 import com.metrocal.metrocal.dto.DashboardStatsDto;
+import com.metrocal.metrocal.dto.DashboardStatsTechDto;
 import com.metrocal.metrocal.dto.DemandeResponseDto;
 import com.metrocal.metrocal.entities.Demande;
 import com.metrocal.metrocal.repository.DemandeRepository;
@@ -46,4 +48,30 @@ public class DashboardService {
                 .map(d -> demandeMapper.mapToDemandeResponseDto(d)) // ✅ Appel via l’instance injectée
                 .collect(Collectors.toList());
     }
+
+
+/*
+ * 
+ *  // 🔹 Stats pour un Client
+    public DashboardStatsClientDto computeClientStats(Long clientId) {
+        long totalDemandes = demandeRepository.countWithCertificatByClientId(clientId);
+    
+        long certificatsDisponibles = demandeRepository.countWithCertificatByClientId(clientId);
+
+        return new DashboardStatsClientDto(
+            
+        );
+    }
+
+    // 🔹 Stats pour un Technicien
+    public DashboardStatsTechDto computeTechnicienStats(Long technicienId) {
+      
+
+        return new DashboardStatsTechDto(
+             
+        );
+    }
+ * 
+ */
+   
 }

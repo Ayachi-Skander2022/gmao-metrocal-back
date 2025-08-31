@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 public class EtalonRequestDto {
     
      private Long id;
+     private String famille;
     private String nom;
     private String reference;
     private EtatEtalon etat;

@@ -13,7 +13,7 @@ import com.metrocal.metrocal.dto.InstrumentRequestDto;
 import com.metrocal.metrocal.dto.InstrumentResponseDto;
 
 import com.metrocal.metrocal.entities.Instrument;
-
+import com.metrocal.metrocal.entities.StatutEtalonnage;
 import com.metrocal.metrocal.entities.User;
 import com.metrocal.metrocal.repository.InstrumentRepository;
 import com.metrocal.metrocal.repository.UserRepository;
@@ -56,6 +56,7 @@ public class InstrumentImpl implements InstrumentService {
             instrument.setUniteMesure(instrumentDto.getUniteMesure());
             instrument.setMinMesure(instrumentDto.getMinMesure());
             instrument.setMaxMesure(instrumentDto.getMaxMesure());
+            instrument.setStatutEtalonnage(StatutEtalonnage.EN_ATTENTE);
     
           
             Instrument savedInstrument = instrumentRepository.save(instrument); // 💾
@@ -71,7 +72,7 @@ public class InstrumentImpl implements InstrumentService {
             responseDto.setUniteMesure(savedInstrument.getUniteMesure());
             responseDto.setMinMesure(savedInstrument.getMinMesure());
             responseDto.setMaxMesure(savedInstrument.getMaxMesure());
-
+            responseDto.setStatutEtalonnage(savedInstrument.getStatutEtalonnage());
             ClientDemDto clientDto = new ClientDemDto(
                 user.getId(),
                 user.getFullName(),
@@ -106,7 +107,7 @@ public class InstrumentImpl implements InstrumentService {
         dto.setUniteMesure(instrument.getUniteMesure());
         dto.setMinMesure(instrument.getMinMesure());
         dto.setMaxMesure(instrument.getMaxMesure());
-  
+        dto.setStatutEtalonnage(instrument.getStatutEtalonnage());
 
         // User (client)
         User user = instrument.getUser();
@@ -144,7 +145,7 @@ public class InstrumentImpl implements InstrumentService {
         dto.setUniteMesure(instrument.getUniteMesure());
         dto.setMinMesure(instrument.getMinMesure());
         dto.setMaxMesure(instrument.getMaxMesure());
-
+        dto.setStatutEtalonnage(instrument.getStatutEtalonnage());
 
         // User (client)
         User user = instrument.getUser();

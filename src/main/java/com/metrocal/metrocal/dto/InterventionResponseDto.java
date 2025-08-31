@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class InterventionResponseDto {
 
     private Long id;
-    private String etalonUtilise;
+      private EtalonResponse etalon;
 
     private List<MesureDto> mesures;
     private Double ecart;

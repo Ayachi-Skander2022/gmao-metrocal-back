@@ -1,5 +1,6 @@
 package com.metrocal.metrocal.controller;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,11 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.metrocal.metrocal.dto.AuthenticationRequest;
 import com.metrocal.metrocal.dto.AuthenticationResponse;
+import com.metrocal.metrocal.dto.EtalonResponse;
 import com.metrocal.metrocal.dto.SignupRequest;
 import com.metrocal.metrocal.dto.UserDto;
 import com.metrocal.metrocal.entities.User;
 import com.metrocal.metrocal.repository.UserRepository;
 import com.metrocal.metrocal.services.Auth.AuthService;
+import com.metrocal.metrocal.services.Etalon.EtalonService;
 import com.metrocal.metrocal.services.Jwt.UserService;
 import com.metrocal.metrocal.util.JwtUtil;
 
@@ -40,6 +44,8 @@ public class AuthController {
 
     private final UserService userService;
     
+        private final EtalonService etalonService;
+
     private final AuthenticationManager authenticationManager;
 
     @PostMapping("/signupClient")
@@ -95,4 +101,11 @@ public class AuthController {
 
           return authenticationResponse;
     }
+
+      @GetMapping("/getAllEtalons")
+    public ResponseEntity<List<EtalonResponse>> getAll() {
+        return ResponseEntity.ok(etalonService.getAll());
+    }
+
+    
 }

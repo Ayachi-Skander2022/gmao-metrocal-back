@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class InterventionRequestDto {
     
-      private String etalonUtilise;
+        private Long etalonId;  
     private List<Double> mesureEtalon;
     private List<Double> mesureInstrument;
     private String dureeEtalonnage;

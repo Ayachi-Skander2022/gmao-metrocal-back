@@ -1,5 +1,7 @@
 package com.metrocal.metrocal.dto;
 
+import com.metrocal.metrocal.entities.StatutEtalonnage;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,6 +22,8 @@ public class InstrumentResponseDto {
     private Double minMesure;
     private Double maxMesure;
     private String uniteMesure;
+
+   private StatutEtalonnage statutEtalonnage;
 
      private ClientDemDto client; // ✅ user imbriqué
 

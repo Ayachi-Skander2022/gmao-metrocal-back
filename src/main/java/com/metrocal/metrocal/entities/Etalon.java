@@ -26,13 +26,18 @@ public class Etalon {
 
     private String code;
 
+    private String famille;
+
     private String nom;
 
     private String reference;
 
+    /* 
     @Lob
     @Column(columnDefinition = "TEXT")
     private String image;
+
+    */
 
     @Enumerated(EnumType.STRING)
     private EtatEtalon etat;

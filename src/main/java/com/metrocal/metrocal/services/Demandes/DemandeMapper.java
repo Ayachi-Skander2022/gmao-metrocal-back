@@ -50,7 +50,7 @@ public class DemandeMapper {
                 instrument.getMinMesure(),
                 instrument.getMaxMesure(),
                 instrument.getUniteMesure(),
-                null
+                instrument.getStatutEtalonnage(), null
             ));
         }
         return dto;

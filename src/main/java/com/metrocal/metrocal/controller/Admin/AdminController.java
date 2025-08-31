@@ -7,17 +7,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
+
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.metrocal.metrocal.dto.DashboardStatsDto;
@@ -27,7 +26,6 @@ import com.metrocal.metrocal.dto.EtalonResponse;
 import com.metrocal.metrocal.dto.InstrumentResponseDto;
 import com.metrocal.metrocal.dto.InterventionResponseDto;
 import com.metrocal.metrocal.dto.UserDto;
-import com.metrocal.metrocal.entities.EtatEtalon;
 import com.metrocal.metrocal.entities.StatutDemande;
 import com.metrocal.metrocal.services.Dashboard.DashboardService;
 import com.metrocal.metrocal.services.Dashboard.DashboardSseEmitterService;
@@ -38,7 +36,6 @@ import com.metrocal.metrocal.services.Intervention.InterventionService;
 import com.metrocal.metrocal.services.Jwt.UserService;
 import com.metrocal.metrocal.services.PdfCertificate.PdfCertificateService;
 
-import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -129,39 +126,51 @@ public ResponseEntity<List<UserDto>> getClients() {
         return ResponseEntity.ok(instrumentService.getAllInstruments());
     }
 
+ // ✅ CREATE Étalon
+@PostMapping("/addEtalon")
+public ResponseEntity<?> addEtalon(@RequestBody EtalonRequestDto etalonDto) {
+    try {
+        EtalonResponse response = etalonService.createEtalon(
+            etalonDto.getNom(),
+            etalonDto.getReference(),
+            etalonDto.getFamille(),
+            etalonDto.getEtat() != null ? etalonDto.getEtat().name() : "EN_MARCHE"
+        );
 
-    @PostMapping(value = "/addEtalon", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> addEtalon(
-        @RequestParam String nom,
-        @RequestParam String reference,
-        @RequestParam String etat,
-        @RequestPart(required = false) MultipartFile image) {
-        
-        try {
-            EtalonResponse response = etalonService.createEtalon(nom, reference, etat, image);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        if (response != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                 .body("Impossible de créer l'étalon");
         }
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                             .body("Erreur interne : " + e.getMessage());
     }
+}
 
-
-
-@PutMapping(value = "/updateEtalon/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-public ResponseEntity<EtalonResponse> updateEtalon(
+// ✅ UPDATE Étalon
+@PutMapping("/updateEtalon/{id}")
+public ResponseEntity<?> updateEtalon(
         @PathVariable Long id,
-        @RequestParam String nom,
-        @RequestParam String reference,
-        @RequestParam String etat,
-        @RequestPart(value = "image", required = false) MultipartFile imageFile) throws IOException, java.io.IOException {
+        @RequestBody EtalonRequestDto etalonDto) {
 
-    EtalonRequestDto request = new EtalonRequestDto();
-    request.setNom(nom);
-    request.setReference(reference);
-    request.setEtat(EtatEtalon.valueOf(etat));  // Assure conversion propre ici
+    try {
+        EtalonResponse response = etalonService.update(
+            id,
+            etalonDto
+        );
 
-    EtalonResponse response = etalonService.update(id, request, imageFile);
-    return ResponseEntity.ok(response);
+        if (response != null) {
+            return ResponseEntity.ok(response);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                 .body("Étallon non trouvé pour l'ID fourni");
+        }
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                             .body("Erreur interne : " + e.getMessage());
+    }
 }
 
 

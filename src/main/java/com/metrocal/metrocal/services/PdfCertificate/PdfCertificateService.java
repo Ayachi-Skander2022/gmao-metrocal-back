@@ -1,5 +1,6 @@
 package com.metrocal.metrocal.services.PdfCertificate;
 
+import com.itextpdf.io.exceptions.IOException;
 import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
@@ -9,8 +10,13 @@ import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.font.PdfFontFactory.EmbeddingStrategy;
 import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
+import com.itextpdf.layout.Canvas;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.borders.Border;
 import com.itextpdf.layout.element.*;
@@ -27,8 +33,6 @@ import java.io.InputStream;
 public class PdfCertificateService {
 
 
-      private static final String LOGO_URL = "https://example.com/path/to/logo.png";
-
     private static final Color HEADER_COLOR = new DeviceRgb(13, 110, 253);
     private static final Color LIGHT_BG = new DeviceRgb(248, 249, 250);
 
@@ -36,18 +40,20 @@ public class PdfCertificateService {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         try (PdfDocument pdfDoc = new PdfDocument(new PdfWriter(baos));
-         Document document = new Document(pdfDoc, PageSize.A4)) {  // <- format portrait
+             Document document = new Document(pdfDoc, PageSize.A4)) {
 
-    document.setMargins(50, 50, 70, 50);
+            document.setMargins(50, 50, 70, 50);
 
             FontSet fonts = loadFonts();
 
             addHeader(document, fonts.getRegular(), fonts.getBold(), dto);
             addMainInfoSection(document, fonts.getRegular(), fonts.getBold(), dto);
             addMeasurementsSection(document, fonts.getRegular(), fonts.getBold(), dto);
-            addConclusionSection(document, fonts.getRegular(), fonts.getBold(), dto);
-            addFooter(document, fonts.getRegular());
+            addConclusionSection(document, fonts.getRegular(), fonts.getBold());
+          addSignature(document, "/static/images/signature.png");
 
+        // Ici, passer pdfDoc et non document
+        addFooter(pdfDoc, fonts.getRegular());
         }
 
         return baos.toByteArray();
@@ -86,22 +92,28 @@ public class PdfCertificateService {
         headerTable.setWidth(UnitValue.createPercentValue(100));
 
         try {
-            ImageData imageData = ImageDataFactory.create(LOGO_URL);
-            Image logo = new Image(imageData);
-            logo.scaleToFit(100, 60);
-            headerTable.addCell(new Cell().add(logo)
-                    .setBorder(Border.NO_BORDER)
-                    .setVerticalAlignment(VerticalAlignment.MIDDLE));
+            InputStream logoStream = getClass().getResourceAsStream("/static/images/logo.jpg");
+            if (logoStream != null) {
+                ImageData imageData = ImageDataFactory.create(logoStream.readAllBytes());
+                Image logo = new Image(imageData);
+                logo.scaleToFit(150, 80);
+                headerTable.addCell(new Cell().add(logo)
+                        .setBorder(Border.NO_BORDER)
+                        .setVerticalAlignment(VerticalAlignment.MIDDLE));
+            } else {
+                headerTable.addCell(new Cell().add(new Paragraph("[LOGO]").setFont(bold))
+                        .setBorder(Border.NO_BORDER));
+            }
         } catch (Exception e) {
             headerTable.addCell(new Cell().add(new Paragraph("[LOGO]").setFont(bold))
                     .setBorder(Border.NO_BORDER));
         }
 
         Paragraph companyInfo = new Paragraph()
-                .add(new Text("LABORATOIRE DE MÉTROLOGIE\n").setFont(bold).setFontSize(14))
-                .add(new Text("Agrément N°: 1234/2023\n").setFont(regular).setFontSize(10))
-                .add(new Text("Adresse: 123 Rue Principale, Ville\n").setFont(regular).setFontSize(10))
-                .add(new Text("Tél: +123 456 789 - Email: contact@labo.com").setFont(regular).setFontSize(10))
+                .add(new Text("LABORATOIRE DE MÉTROLOGIE – METROCAL\n").setFont(bold).setFontSize(10))
+                .add(new Text("13, rue Claude Bernard – Cité Les Jardins – 1002 Tunis – TUNISIE\n").setFont(regular).setFontSize(10))
+                .add(new Text("Tél : (216) 71 795 867 / (216) 71 846 122\n").setFont(regular).setFontSize(10))
+                .add(new Text("E-mail : metrocal@planet.tn\n").setFont(regular).setFontSize(10))
                 .setTextAlignment(TextAlignment.RIGHT);
 
         headerTable.addCell(new Cell().add(companyInfo)
@@ -136,93 +148,38 @@ public class PdfCertificateService {
                 .setFontSize(14)
                 .setMarginBottom(10));
 
-        // Client
-        document.add(new Paragraph("Client : " + dto.getDemande().getClient().getFullName())
-                .setFont(regular)
-                .setFontSize(12));
+        document.add(new Paragraph("Client : " + dto.getDemande().getClient().getFullName()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Adresse : " + dto.getDemande().getClient().getAdresse()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Téléphone : " + dto.getDemande().getClient().getTelephone()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Email : " + dto.getDemande().getClient().getEmail()).setFont(regular).setFontSize(12));
 
-        // Adresse client
-        document.add(new Paragraph("Adresse : " + dto.getDemande().getClient().getAdresse())
-                .setFont(regular)
-                .setFontSize(12));
-
-        // Téléphone client
-        document.add(new Paragraph("Téléphone : " + dto.getDemande().getClient().getTelephone())
-                .setFont(regular)
-                .setFontSize(12));
-
-        // Email client
-        document.add(new Paragraph("Email : " + dto.getDemande().getClient().getEmail())
-                .setFont(regular)
-                .setFontSize(12));
-
-        document.add(new Paragraph("\nInstrument étalonné :")
-                .setFont(bold)
-                .setFontSize(14)
-                .setMarginTop(15));
-
+        document.add(new Paragraph("\nInstrument étalonné :").setFont(bold).setFontSize(14).setMarginTop(15));
         if (dto.getInstrument() != null) {
-            document.add(new Paragraph("Nom : " + dto.getInstrument().getNomInstrument())
-                    .setFont(regular).setFontSize(12));
-            document.add(new Paragraph("Référence : " + dto.getInstrument().getReferenceInstrument())
-                    .setFont(regular).setFontSize(12));
-            document.add(new Paragraph("Constructeur : " + dto.getInstrument().getConstructeur())
-                    .setFont(regular).setFontSize(12));
-            document.add(new Paragraph("Type de mesure : " + dto.getInstrument().getTypeMesure())
-                    .setFont(regular).setFontSize(12));
-            document.add(new Paragraph("Plage de mesure : " + dto.getInstrument().getMinMesure() + " - " + dto.getInstrument().getMaxMesure() + " " + dto.getInstrument().getUniteMesure())
-                    .setFont(regular).setFontSize(12));
+            document.add(new Paragraph("Nom : " + dto.getInstrument().getNomInstrument()).setFont(regular).setFontSize(12));
+            document.add(new Paragraph("Référence : " + dto.getInstrument().getReferenceInstrument()).setFont(regular).setFontSize(12));
+            document.add(new Paragraph("Constructeur : " + dto.getInstrument().getConstructeur()).setFont(regular).setFontSize(12));
+            document.add(new Paragraph("Type de mesure : " + dto.getInstrument().getTypeMesure()).setFont(regular).setFontSize(12));
+            document.add(new Paragraph("Plage de mesure : " + dto.getInstrument().getMinMesure() + " - " + dto.getInstrument().getMaxMesure() + " " + dto.getInstrument().getUniteMesure()).setFont(regular).setFontSize(12));
         } else {
-            document.add(new Paragraph("Aucun instrument renseigné.")
-                    .setFont(regular)
-                    .setFontSize(12));
+            document.add(new Paragraph("Aucun instrument renseigné.").setFont(regular).setFontSize(12));
         }
 
-        // Technicien
-        document.add(new Paragraph("\nTechnicien ayant réalisé l'intervention :")
-                .setFont(bold)
-                .setFontSize(14)
-                .setMarginTop(15));
+        document.add(new Paragraph("\nTechnicien ayant réalisé l'intervention :").setFont(bold).setFontSize(14).setMarginTop(15));
+        document.add(new Paragraph(dto.getTechnicien().getFullName()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Adresse : " + dto.getTechnicien().getAdresse()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Téléphone : " + dto.getTechnicien().getTelephone()).setFont(regular).setFontSize(12));
 
-        document.add(new Paragraph(dto.getTechnicien().getFullName())
-                .setFont(regular)
-                .setFontSize(12));
-        document.add(new Paragraph("Adresse : " + dto.getTechnicien().getAdresse())
-                .setFont(regular)
-                .setFontSize(12));
-        document.add(new Paragraph("Téléphone : " + dto.getTechnicien().getTelephone())
-                .setFont(regular)
-                .setFontSize(12));
-
-        document.add(new Paragraph("\nDétails de l'intervention :")
-                .setFont(bold)
-                .setFontSize(14)
-                .setMarginTop(15));
-
-        document.add(new Paragraph("Durée de l'étalonnage : " + dto.getDureeEtalonnage() + " heures")
-                .setFont(regular)
-                .setFontSize(12));
-        document.add(new Paragraph("Écart global : " + dto.getEcart())
-                .setFont(regular)
-                .setFontSize(12));
-        document.add(new Paragraph("Type d'étalonnage : " + dto.getDemande().getTypeEtalonnage())
-                .setFont(regular)
-                .setFontSize(12));
-        document.add(new Paragraph("Statut de l'étalonnage : " + dto.getDemande().getStatutEtalonnage())
-                .setFont(regular)
-                .setFontSize(12));
+        document.add(new Paragraph("\nDétails de l'intervention :").setFont(bold).setFontSize(14).setMarginTop(15));
+        document.add(new Paragraph("Durée de l'étalonnage : " + dto.getDureeEtalonnage() + " heures").setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Écart global : " + dto.getEcart()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Type d'étalonnage : " + dto.getDemande().getTypeEtalonnage()).setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Statut de l'étalonnage : " + dto.getDemande().getStatutEtalonnage()).setFont(regular).setFontSize(12));
     }
 
     private void addMeasurementsSection(Document document, PdfFont regular, PdfFont bold, InterventionResponseDto dto) {
-        document.add(new Paragraph("\nMesures")
-                .setFont(bold)
-                .setFontSize(14)
-                .setMarginBottom(10));
+        document.add(new Paragraph("\nMesures").setFont(bold).setFontSize(14).setMarginBottom(10));
 
-        // Créer un tableau avec colonnes: Valeur Instrument | Valeur Étalon | Écart
         Table table = new Table(UnitValue.createPercentArray(new float[]{3, 3, 3})).useAllAvailableWidth();
-
-        // Entêtes
         table.addHeaderCell(new Cell().add(new Paragraph("Valeur Instrument").setFont(bold)));
         table.addHeaderCell(new Cell().add(new Paragraph("Valeur Étalon").setFont(bold)));
         table.addHeaderCell(new Cell().add(new Paragraph("Écart").setFont(bold)));
@@ -236,26 +193,71 @@ public class PdfCertificateService {
         document.add(table);
     }
 
-    private void addConclusionSection(Document document, PdfFont regular, PdfFont bold, InterventionResponseDto dto) {
-        document.add(new Paragraph("\nConclusion")
-                .setFont(bold)
-                .setFontSize(14)
-                .setMarginTop(20));
-
+    private void addConclusionSection(Document document, PdfFont regular, PdfFont bold) {
+        document.add(new Paragraph("\nConclusion").setFont(bold).setFontSize(14).setMarginTop(20));
         document.add(new Paragraph("Ce certificat confirme la conformité des étalonnages réalisés pour l'instrument indiqué. "
                 + "Toute anomalie ou remarque doit être signalée au laboratoire dans les plus brefs délais.")
                 .setFont(regular)
                 .setFontSize(12));
     }
 
-    private void addFooter(Document document, PdfFont regular) {
-        document.add(new Paragraph("\n© 2025 Laboratoire de Métrologie")
-                .setFont(regular)
-                .setFontSize(10)
+
+private void addSignature(Document document, String signatureImagePath) throws IOException, java.io.IOException {
+    InputStream sigStream = getClass().getResourceAsStream(signatureImagePath);
+    if (sigStream != null) {
+        ImageData sigData = ImageDataFactory.create(sigStream.readAllBytes());
+        Image signature = new Image(sigData);
+        
+        // Ajuster la taille automatiquement en conservant le ratio
+        float maxWidth = 300; // largeur maximale
+        float maxHeight = 150; // hauteur maximale
+        if (signature.getImageWidth() > maxWidth || signature.getImageHeight() > maxHeight) {
+            signature.scaleToFit(maxWidth, maxHeight);
+        }
+        
+        // Centrer l'image
+        signature.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        signature.setMarginTop(20);
+        document.add(signature);
+
+        // Ajouter une ligne pour la signature
+        LineSeparator line = new LineSeparator(new SolidLine());
+        line.setWidth(UnitValue.createPercentValue(30)); // largeur ligne
+        line.setMarginTop(5);
+        line.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        document.add(line);
+
+        // Ajouter le nom et le titre du signataire en dessous
+        Paragraph signataire = new Paragraph()
+                .add(new Text("Signataire Responsable Qualité").setFontSize(10))
                 .setTextAlignment(TextAlignment.CENTER)
-                .setMarginTop(40));
+                .setMarginTop(5);
+        document.add(signataire);
     }
-    
+}
+
+
+  private void addFooter(PdfDocument pdfDoc, PdfFont regular) {
+    int numberOfPages = pdfDoc.getNumberOfPages();
+    for (int i = 1; i <= numberOfPages; i++) {
+        PdfPage page = pdfDoc.getPage(i);
+        Rectangle pageSize = page.getPageSize();
+        PdfCanvas pdfCanvas = new PdfCanvas(page);
+        Canvas canvas = new Canvas(pdfCanvas, pageSize);
+
+        canvas.showTextAligned(
+            new Paragraph("© 2025 Laboratoire de Métrologie – METROCAL")
+                .setFont(regular)
+                .setFontSize(10),
+            pageSize.getWidth() / 2, // X : centré
+            pageSize.getBottom() + 20, // Y : 20 points au dessus du bas
+            TextAlignment.CENTER
+        );
+        canvas.close();
+    }
+
+
+}
 
 
 }

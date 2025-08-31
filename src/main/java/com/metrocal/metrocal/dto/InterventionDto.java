@@ -13,5 +13,6 @@ public class InterventionDto {
 
     private Long technicienId;
     private Long demandeId;
+    private Long instrumentId;
     
 }

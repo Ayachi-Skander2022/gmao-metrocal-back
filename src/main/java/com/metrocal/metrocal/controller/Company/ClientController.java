@@ -15,14 +15,19 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.metrocal.metrocal.dto.DashboardStatsDto;
 import com.metrocal.metrocal.dto.DemandeRequestDto;
 import com.metrocal.metrocal.dto.DemandeResClientDto;
 import com.metrocal.metrocal.dto.DemandeResponseDto;
 import com.metrocal.metrocal.dto.InstrumentRequestDto;
 import com.metrocal.metrocal.dto.InstrumentResponseDto;
 import com.metrocal.metrocal.dto.InterventionResponseDto;
+import com.metrocal.metrocal.services.Dashboard.DashboardService;
+import com.metrocal.metrocal.services.Dashboard.DashboardSseEmitterService;
 import com.metrocal.metrocal.services.Demandes.DemandeService;
 import com.metrocal.metrocal.services.Instrument.InstrumentService;
 import com.metrocal.metrocal.services.Intervention.InterventionService;
@@ -45,6 +50,9 @@ public class ClientController {
         private final InterventionService interventionService;
 
         private final PdfCertificateService pdfCertificateService;
+
+         private final DashboardService dashboardService;
+    private final DashboardSseEmitterService emitterService;
 
 
 
@@ -116,6 +124,40 @@ public ResponseEntity<byte[]> downloadCertificate(@PathVariable Long id) throws 
 
     return new ResponseEntity<>(pdf, headers, HttpStatus.OK);
 }
+
+
+  @GetMapping("/stats")
+    public DashboardStatsDto getStats() {
+        return dashboardService.computeStats();
+    }
+
+    @GetMapping(path = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamStats() {
+        // عند الاتصال، نرسل حالة أولية مباشرةً
+        SseEmitter emitter = emitterService.createEmitter();
+        DashboardStatsDto stats = dashboardService.computeStats();
+        try {
+            emitter.send(SseEmitter.event().name("init").data(stats));
+        } catch (Exception e) {
+            // ignore
+        }
+        return emitter;
+    }
+
+    // Optional: endpoint لإجبار بث التحديث فوراً (يفيد أثناء التطوير أو من خدمات أخرى)
+    @PostMapping("/refresh")
+    public void refresh() throws java.io.IOException {
+        DashboardStatsDto stats = dashboardService.computeStats();
+        emitterService.broadcastStats(stats);
+    }
+
+
+ 
+    @GetMapping("/last-demandes")
+    public List<DemandeResponseDto> getLastDemandes(
+        @RequestParam(defaultValue = "5") int limit) {
+        return dashboardService.getLastDemandes(limit);
+    }
 
 
 

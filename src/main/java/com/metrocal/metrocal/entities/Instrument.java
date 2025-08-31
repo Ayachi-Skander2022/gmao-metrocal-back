@@ -1,12 +1,15 @@
 package com.metrocal.metrocal.entities;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
@@ -37,12 +40,18 @@ public class Instrument {
 
     private Double maxMesure;
 
+     @Enumerated(EnumType.STRING)
+    private StatutEtalonnage statutEtalonnage;
 
     
     @ManyToOne(fetch = FetchType.LAZY)    
     @JoinColumn(name = "user_id")
     private User user;
 
+
+      @OneToOne
+   @JoinColumn(name = "intervention_id", unique = true)
+    private InterventionPlus intervention;
 
 
 

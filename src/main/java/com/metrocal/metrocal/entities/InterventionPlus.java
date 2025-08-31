@@ -6,6 +6,7 @@ import java.util.List;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,7 +27,10 @@ public class InterventionPlus  {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String etalonUtilise;
+@ManyToOne
+@JoinColumn(name = "etalon_id")
+private Etalon etalonUtilise;
+
 
 
 
@@ -53,7 +57,9 @@ public class InterventionPlus  {
 
 
 
-
+    @OneToOne
+   @JoinColumn(name = "instrument_id", unique = true)
+    private Instrument instrument;
    
 
     

@@ -77,7 +77,7 @@ public DemandeResponseDto creerDemande(DemandeRequestDto demandeDto, Long instru
         demande.setDateDemande(LocalDate.now());
         demande.setStatutDemande(StatutDemande.PENDING);
         demande.setStatutEtalonnage(StatutEtalonnage.EN_ATTENTE);
-
+        demande.getInstrument().setStatutEtalonnage(StatutEtalonnage.EN_ATTENTE);
         Demande savedDemande = demandeRepo.save(demande);
 
         DashboardStatsDto stats = dashboardService.computeStats();
@@ -123,6 +123,7 @@ public DemandeResponseDto creerDemande(DemandeRequestDto demandeDto, Long instru
                 instrument.getMinMesure(),
                 instrument.getMaxMesure(),
                 instrument.getUniteMesure(),
+                instrument.getStatutEtalonnage(),
                 null // ou instrument.getClient() si tu veux l’imbriquer
         );
         responseDto.setInstrument(instrumentResponseDto);
@@ -196,6 +197,7 @@ public List<DemandeResponseDto> getAllDemandes() {
                 instrument.getMinMesure(),
                 instrument.getMaxMesure(),
                 instrument.getUniteMesure(),
+                instrument.getStatutEtalonnage(),
                 null // ou `instrument.getClient()` si le modèle supporte
             ));
         }
@@ -247,6 +249,7 @@ public List<DemandeResClientDto> getDemandesByClientId(Long clientId) {
                 instrument.getMinMesure(),
                 instrument.getMaxMesure(),
                 instrument.getUniteMesure(),
+                instrument.getStatutEtalonnage(),
                 null // ou instrument.getClient() si tu veux
             ));
 
@@ -342,6 +345,7 @@ public List<DemandeResponseDto> getDemandesByTechnicien(Long technicienId) {
                 instrument.getMinMesure(),
                 instrument.getMaxMesure(),
                 instrument.getUniteMesure(),
+                instrument.getStatutEtalonnage(),
                 null // ou instrument.getClient() si nécessaire
             ));
 
