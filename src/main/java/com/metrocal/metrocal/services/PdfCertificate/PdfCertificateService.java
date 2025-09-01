@@ -170,7 +170,7 @@ public class PdfCertificateService {
         document.add(new Paragraph("Téléphone : " + dto.getTechnicien().getTelephone()).setFont(regular).setFontSize(12));
 
         document.add(new Paragraph("\nDétails de l'intervention :").setFont(bold).setFontSize(14).setMarginTop(15));
-        document.add(new Paragraph("Durée de l'étalonnage : " + dto.getDureeEtalonnage() + " heures").setFont(regular).setFontSize(12));
+        document.add(new Paragraph("Durée de l'étalonnage : " + dto.getDureeEtalonnage() + " minutes").setFont(regular).setFontSize(12));
         document.add(new Paragraph("Écart global : " + dto.getEcart()).setFont(regular).setFontSize(12));
         document.add(new Paragraph("Type d'étalonnage : " + dto.getDemande().getTypeEtalonnage()).setFont(regular).setFontSize(12));
         document.add(new Paragraph("Statut de l'étalonnage : " + dto.getDemande().getStatutEtalonnage()).setFont(regular).setFontSize(12));
